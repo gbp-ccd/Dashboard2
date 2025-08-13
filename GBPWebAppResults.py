@@ -658,7 +658,7 @@ with st.expander("Policy Area Support/Oppose Breakdown by Party (All Months, 2×
         'Healthcare': [col for col in combined.columns if col.startswith('Healthcare')],
         'Energy Policy': [col for col in combined.columns if col.startswith('Energy')],
         'Taxes': [col for col in combined.columns if col.startswith('Taxes')],
-        'Federal Spending & Debt': [col for col in combined.columns if col.startswith('Federal')]
+        'Federal Spending & Debt': [col for col in combined.columns if col.startswith('Fed')]
     }
 
     month_pairs = [("May", "June"), ("July", "August")]
