@@ -1421,7 +1421,7 @@ support_counts['Percent'] = (
 )
 
 # --- Make low-N states white without breaking the color scale ---
-low_n = support_counts['Total Participants'] <= 3
+low_n = support_counts['Total Participants'] <= 5
 support_counts['Percent_color'] = support_counts['Percent'].mask(low_n)  # NaN => white
 
 # Hover label: show N/A for low N, otherwise 0–100%
@@ -1471,7 +1471,7 @@ fig.update_layout(
         ),
         dict(
             x=0.02, y=-0.33, xref='paper', yref='paper',
-            text='White = ≤ 3 respondents', showarrow=False, font=dict(size=12)
+            text='White = ≤ 5 respondents', showarrow=False, font=dict(size=12)
         )
     ]
 )
