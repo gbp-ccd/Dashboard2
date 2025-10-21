@@ -667,10 +667,10 @@ with st.expander("Policy Area Support/Oppose Breakdown by Party (All Months, 3×
     }
 
     month_pairs = [("May", "June"), ("July", "August"),("September", )]
-   st.markdown("#### Policy Area Support Breakdown by Party")
+    st.markdown("#### Policy Area Support Breakdown by Party")
 
-month_pairs = [("May", "June"), ("July", "August"), ("September", )]
-for row_pair in month_pairs:
+    month_pairs = [("May", "June"), ("July", "August"), ("September", )]
+    for row_pair in month_pairs:
     cols = st.columns(len(row_pair))  # 2 for pairs, 1 for single
     for i, month in enumerate(row_pair):
         month_df = combined[combined["Month"] == month]
