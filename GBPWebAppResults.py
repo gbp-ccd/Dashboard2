@@ -668,70 +668,146 @@ with st.expander("Policy Area Support/Oppose Breakdown by Party (All Months, 3×
 
     month_pairs = [("May", "June"), ("July", "August"),("September", )]
     st.markdown("#### Policy Area Support Breakdown by Party")
-
-    month_pairs = [("May", "June"), ("July", "August"), ("September", )]
     for row_pair in month_pairs:
-    cols = st.columns(len(row_pair))  # 2 for pairs, 1 for single
-    for i, month in enumerate(row_pair):
-        month_df = combined[combined["Month"] == month]
+        cols = st.columns(len(row_pair))  # 2 for pairs, 1 for single
+        for i, month in enumerate(row_pair):
+            month_df = combined[combined["Month"] == month]
 
-        summary_data = []
-        for issue, cols_ in issues.items():
-            if not cols_:
-                continue
-            for party in ['Democrat', 'Republican', 'Independent']:
-                party_df = month_df[month_df['pid3'] == party]
-                if party_df.empty:
+            summary_data = []
+            for issue, cols_ in issues.items():
+                if not cols_:
                     continue
+                for party in ['Democrat', 'Republican', 'Independent']:
+                    party_df = month_df[month_df['pid3'] == party]
+                    if party_df.empty:
+                        continue
+                    issue_votes = party_df[cols_].replace(vote_map)
+                    issue_votes = issue_votes.apply(pd.to_numeric, errors='coerce')
+                    support = (issue_votes == 4).sum().sum()
+                    oppose = (issue_votes == 2).sum().sum()
+                    not_sure = (issue_votes == 3).sum().sum()
+                    total = support + oppose + not_sure
+                    if total > 0:
+                        support_pct = support / total * 100
+                        summary_data.append({
+                            'Issue': issue,
+                            'pid3': party,
+                            'Support %': support_pct
+                        })
 
-                issue_votes = party_df[cols_].replace(vote_map)
-                issue_votes = issue_votes.apply(pd.to_numeric, errors='coerce')
+            plot_df = pd.DataFrame(summary_data)
 
-                support = (issue_votes >= 4).sum().sum()
-                oppose = (issue_votes <= 2).sum().sum()
-                not_sure = (issue_votes == 3).sum().sum()
-                total = support + oppose + not_sure
+            with cols[i]:
+                st.markdown(f"#### {month}")
+                if not plot_df.empty:
+                    fig = px.bar(
+                        plot_df,
+                        x='Issue',
+                        y='Support %',
+                        color='pid3',
+                        barmode='group',
+                        orientation='v',
+                        color_discrete_map={
+                            'Republican': '#d73027',
+                            'Democrat': '#4575b4',
+                            'Independent': '#008000'
+                        },
+                        category_orders={'Issue': list(issues.keys())}
+                    )
+                    fig.update_layout(
+                        xaxis_title='Policy Issue',
+                        yaxis_title='Support Percentage',
+                        title=None,
+                        uniformtext_minsize=8,
+                        uniformtext_mode='hide',
+                        margin=dict(l=10, r=10, t=30, b=10),
+                        legend=dict(font=dict(size=10)),
+                        height=330
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.write("No data.")
 
-                if total > 0:
-                    support_pct = support / total * 100
-                    summary_data.append({
-                        'Issue': issue,
-                        'pid3': party,
-                        'Support %': support_pct
-                    })
 
-        plot_df = pd.DataFrame(summary_data)
+    vote_map = {
+        "Hate It": 1,
+        "Dislike It": 2,
+        "Not Sure": 3,
+        "Good Idea": 4,
+        "Critical to Me & Others": 5
+    }
 
-        with cols[i]:
-            st.markdown(f"#### {month}")
-            if not plot_df.empty:
-                fig = px.bar(
-                    plot_df,
-                    x='Issue',
-                    y='Support %',
-                    color='pid3',
-                    barmode='group',
-                    orientation='v',
-                    color_discrete_map={
-                        'Republican': '#d73027',
-                        'Democrat': '#4575b4',
-                        'Independent': '#008000'
-                    },
-                    category_orders={'Issue': list(issues.keys())}
-                )
-                fig.update_layout(
-                    xaxis_title='Policy Issue',
-                    yaxis_title='Support Percentage',
-                    title=None,
-                    uniformtext_minsize=8,
-                    uniformtext_mode='hide',
-                    margin=dict(l=10, r=10, t=30, b=10),
-                    legend=dict(font=dict(size=10)),
-                    height=330
-                )
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.write("No data.")
+    issues = {
+        'Economic Mobility & Growth': [col for col in combined.columns if col.startswith('Economic')],
+        'K-12 Education': [col for col in combined.columns if col.startswith('Education')],
+        'Healthcare': [col for col in combined.columns if col.startswith('Healthcare')],
+        'Energy Policy': [col for col in combined.columns if col.startswith('Energy')],
+        'Taxes': [col for col in combined.columns if col.startswith('Taxes')],
+        'Federal Spending & Debt': [col for col in combined.columns if col.startswith('Fed')]
+    }
+
+    month_pairs = [("May", "June"), ("July", "August"),("September", )]
+    st.markdown("#### Policy Area Oppose Breakdown by Party")
+    for row_pair in month_pairs:
+        cols = st.columns(len(row_pair))  # 2 for pairs, 1 for single
+        for i, month in enumerate(row_pair):
+            month_df = combined[combined["Month"] == month]
+
+            summary_data = []
+            for issue, cols_ in issues.items():
+                if not cols_:
+                    continue
+                for party in ['Democrat', 'Republican', 'Independent']:
+                    party_df = month_df[month_df['pid3'] == party]
+                    if party_df.empty:
+                        continue
+                    issue_votes = party_df[cols_].replace(vote_map)
+                    issue_votes = issue_votes.apply(pd.to_numeric, errors='coerce')
+                    support = (issue_votes == 4).sum().sum()
+                    oppose = (issue_votes == 2).sum().sum()
+                    not_sure = (issue_votes == 3).sum().sum()
+                    total = support + oppose + not_sure + not_sure
+                    if total > 0:
+                        oppose_pct = oppose / total * 100
+                        summary_data.append({
+                            'Issue': issue,
+                            'pid3': party,
+                            'Oppose %': oppose_pct
+                        })
+
+            plot_df = pd.DataFrame(summary_data)
+
+            with cols[i]:
+                st.markdown(f"#### {month}")
+                if not plot_df.empty:
+                    fig = px.bar(
+                        plot_df,
+                        x='Issue',
+                        y='Oppose %',
+                        color='pid3',
+                        barmode='group',
+                        orientation='v',
+                        title=None,
+                        color_discrete_map={
+                            'Republican': '#d73027',
+                            'Democrat': '#4575b4',
+                            'Independent': '#008000'
+                        },
+                        category_orders={'Issue': list(issues.keys())}
+                    )
+                    fig.update_layout(
+                        xaxis_title='Policy Issue',
+                        yaxis_title='Oppose Percentage',
+                        uniformtext_minsize=8,
+                        uniformtext_mode='hide',
+                        margin=dict(l=10, r=10, t=30, b=10),
+                        legend=dict(font=dict(size=10)),
+                        height=330
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.write("No data.")
+
 with st.expander("Top Proposals Supported/Opposed by Party (All Months, 2×2 Grid)", expanded=False):
     vote_map = {
         "Hate It": 1,
@@ -764,18 +840,15 @@ with st.expander("Top Proposals Supported/Opposed by Party (All Months, 2×2 Gri
             )
             df_long['Vote'] = df_long['Vote'].replace(vote_map)
             df_long['Vote'] = pd.to_numeric(df_long['Vote'], errors='coerce')
-            df_long['Support'] = df_long['Vote'] >= 4
-            df_long['Oppose'] = df_long['Vote'] <= 2
-            df_long['NotSure'] = df_long['Vote'] == 3
             df_long = df_long[df_long['Vote'] != 3]  # Drop "Not Sure"
 
+            df_long['Support'] = df_long['Vote'] >= 4
             support_summary = (
-               df_long.groupby(['Proposal', 'pid3'])
-              .agg({'Support': 'sum', 'Oppose': 'sum', 'NotSure': 'sum'})
-              .reset_index()
+                df_long.groupby(['Proposal', 'pid3'])['Support']
+                .agg(['sum', 'count'])
+                .reset_index()
             )
-            support_summary['Total'] = support_summary['Support'] + support_summary['Oppose'] + support_summary['NotSure']
-            support_summary['Support %'] = 100 * support_summary['Support'] / support_summary['Total']
+            support_summary['Support %'] = 100 * support_summary['sum'] / support_summary['count']
 
             # Find top 5 proposals per party, get their union
             top5_republican = (
