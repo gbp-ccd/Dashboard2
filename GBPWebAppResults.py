@@ -840,6 +840,9 @@ with st.expander("Top Proposals Supported/Opposed by Party (All Months, 2×2 Gri
             )
             df_long['Vote'] = df_long['Vote'].replace(vote_map)
             df_long['Vote'] = pd.to_numeric(df_long['Vote'], errors='coerce')
+            df_long['Support'] = df_long['Vote'] >= 4
+            df_long['Oppose'] = df_long['Vote'] <= 2
+            df_long['NotSure'] = df_long['Vote'] == 3
             df_long = df_long[df_long['Vote'] != 3]  # Drop "Not Sure"
 
             df_long['Support'] = df_long['Vote'] >= 4
