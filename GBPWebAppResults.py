@@ -763,10 +763,10 @@ with st.expander("Policy Area Support/Oppose Breakdown by Party (All Months, 3×
                         continue
                     issue_votes = party_df[cols_].replace(vote_map)
                     issue_votes = issue_votes.apply(pd.to_numeric, errors='coerce')
-                    support = (issue_votes == 4).sum().sum()
-                    oppose = (issue_votes == 2).sum().sum()
-                    not_sure = (issue_votes == 3).sum().sum()
-                    total = support + oppose + not_sure + not_sure
+                    support = (issue_votes >= 4).sum().sum()   # 4 or 5 = support
+                    oppose  = (issue_votes <= 2).sum().sum()   # 1 or 2 = oppose
+                    not_sure = (issue_votes == 3).sum().sum()  # 3 = Not Sure
+                    total = support + oppose + not_sure        # FIX: remove the duplicate + not_sure
                     if total > 0:
                         oppose_pct = oppose / total * 100
                         summary_data.append({
